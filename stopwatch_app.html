@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ストップウォッチ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #131D4F 0%, #254D70 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #EFE4D2;
+            padding: 20px;
+        }
+
+        .stopwatch-container {
+            background: rgba(239, 228, 210, 0.1);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(239, 228, 210, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(19, 29, 79, 0.4);
+            text-align: center;
+            width: 500px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(19, 29, 79, 0.5);
+            color: #EFE4D2;
+            flex-shrink: 0;
+        }
+
+        .time-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(19, 29, 79, 0.5);
+            background: rgba(19, 29, 79, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            letter-spacing: 2px;
+            color: #EFE4D2;
+            border: 1px solid rgba(239, 228, 210, 0.2);
+            flex-shrink: 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+            box-shadow: 0 4px 15px rgba(19, 29, 79, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(19, 29, 79, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #254D70, #131D4F);
+            color: #EFE4D2;
+            border: 2px solid rgba(239, 228, 210, 0.3);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #954C2E, #131D4F);
+            color: #EFE4D2;
+            border: 2px solid rgba(239, 228, 210, 0.3);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #954C2E, #254D70);
+            color: #EFE4D2;
+            border: 2px solid rgba(239, 228, 210, 0.3);
+        }
+
+        .btn-lap {
+            background: linear-gradient(135deg, #254D70, #954C2E);
+            color: #EFE4D2;
+            border: 2px solid rgba(239, 228, 210, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(19, 29, 79, 0.3);
+        }
+
+        .lap-times {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-top: 20px;
+        }
+
+        .lap-times h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #954C2E;
+            flex-shrink: 0;
+        }
+
+        .lap-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 5px;
+        }
+
+        .lap-item {
+            background: rgba(239, 228, 210, 0.1);
+            border: 1px solid rgba(239, 228, 210, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .lap-item:hover {
+            background: rgba(239, 228, 210, 0.15);
+            transform: translateX(5px);
+        }
+
+        .lap-number {
+            font-weight: bold;
+            color: #954C2E;
+        }
+
+        .lap-time {
+            font-weight: bold;
+            color: #EFE4D2;
+        }
+
+        .lap-diff {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .lap-diff.faster {
+            color: #254D70;
+        }
+
+        .lap-diff.slower {
+            color: #954C2E;
+        }
+
+        .milliseconds {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        /* スクロールバーのスタイリング */
+        .lap-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .lap-list::-webkit-scrollbar-track {
+            background: rgba(239, 228, 210, 0.1);
+            border-radius: 10px;
+        }
+
+        .lap-list::-webkit-scrollbar-thumb {
+            background: rgba(149, 76, 46, 0.5);
+            border-radius: 10px;
+        }
+
+        .lap-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(149, 76, 46, 0.7);
+        }
+
+        @media (max-width: 600px) {
+            .stopwatch-container {
+                width: 90%;
+                height: 550px;
+                padding: 25px;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .time-display {
+                font-size: 2.2rem;
+                padding: 15px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                min-width: 85px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stopwatch-container {
+                width: 95%;
+                height: 500px;
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .btn {
+                width: 150px;
+            }
+            
+            .time-display {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stopwatch-container">
+        <h1 class="title">ストップウォッチ</h1>
+        
+        <div class="time-display" id="timeDisplay">
+            00:00.<span class="milliseconds">00</span>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn">スタート</button>
+            <button class="btn btn-lap" id="lapBtn" disabled>ラップ</button>
+            <button class="btn btn-reset" id="resetBtn">リセット</button>
+        </div>
+        
+        <div class="lap-times" id="lapTimes" style="display: none;">
+            <h3>ラップタイム</h3>
+            <div class="lap-list" id="lapList"></div>
+        </div>
+    </div>
+
+    <script>
+        class Stopwatch {
+            constructor() {
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.timerInterval = null;
+                this.isRunning = false;
+                this.lapTimes = [];
+                
+                this.initializeElements();
+                this.setupEventListeners();
+            }
+            
+            initializeElements() {
+                this.timeDisplay = document.getElementById('timeDisplay');
+                this.startBtn = document.getElementById('startBtn');
+                this.lapBtn = document.getElementById('lapBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.lapTimesContainer = document.getElementById('lapTimes');
+                this.lapList = document.getElementById('lapList');
+            }
+            
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.toggleTimer());
+                this.lapBtn.addEventListener('click', () => this.recordLap());
+                this.resetBtn.addEventListener('click', () => this.reset());
+            }
+            
+            formatTime(milliseconds) {
+                const totalSeconds = Math.floor(milliseconds / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                const ms = Math.floor((milliseconds % 1000) / 10);
+                
+                return {
+                    formatted: `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
+                    milliseconds: ms.toString().padStart(2, '0')
+                };
+            }
+            
+            updateDisplay() {
+                const currentTime = this.elapsedTime + (this.isRunning ? Date.now() - this.startTime : 0);
+                const time = this.formatTime(currentTime);
+                this.timeDisplay.innerHTML = `${time.formatted}.<span class="milliseconds">${time.milliseconds}</span>`;
+            }
+            
+            toggleTimer() {
+                if (!this.isRunning) {
+                    this.start();
+                } else {
+                    this.stop();
+                }
+            }
+            
+            start() {
+                this.startTime = Date.now();
+                this.isRunning = true;
+                this.timerInterval = setInterval(() => this.updateDisplay(), 10);
+                
+                this.startBtn.textContent = 'ストップ';
+                this.startBtn.className = 'btn btn-stop';
+                this.lapBtn.disabled = false;
+                this.resetBtn.disabled = true;
+            }
+            
+            stop() {
+                this.elapsedTime += Date.now() - this.startTime;
+                this.isRunning = false;
+                clearInterval(this.timerInterval);
+                
+                this.startBtn.textContent = 'スタート';
+                this.startBtn.className = 'btn btn-start';
+                this.lapBtn.disabled = true;
+                this.resetBtn.disabled = false;
+            }
+            
+            reset() {
+                this.elapsedTime = 0;
+                this.isRunning = false;
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+                this.lapTimes = [];
+                
+                this.updateDisplay();
+                this.startBtn.textContent = 'スタート';
+                this.startBtn.className = 'btn btn-start';
+                this.lapBtn.disabled = true;
+                this.resetBtn.disabled = false;
+                
+                this.lapTimesContainer.style.display = 'none';
+                this.lapList.innerHTML = '';
+            }
+            
+            recordLap() {
+                const currentTime = this.elapsedTime + (Date.now() - this.startTime);
+                this.lapTimes.push(currentTime);
+                
+                this.updateLapDisplay();
+                this.lapTimesContainer.style.display = 'flex';
+            }
+            
+            updateLapDisplay() {
+                this.lapList.innerHTML = '';
+                
+                this.lapTimes.forEach((lapTime, index) => {
+                    const lapItem = document.createElement('div');
+                    lapItem.className = 'lap-item';
+                    
+                    const lapNumber = document.createElement('span');
+                    lapNumber.className = 'lap-number';
+                    lapNumber.textContent = `#${index + 1}`;
+                    
+                    const lapTimeFormatted = this.formatTime(lapTime);
+                    const lapTimeSpan = document.createElement('span');
+                    lapTimeSpan.className = 'lap-time';
+                    lapTimeSpan.innerHTML = `${lapTimeFormatted.formatted}.<span class="milliseconds">${lapTimeFormatted.milliseconds}</span>`;
+                    
+                    const lapDiff = document.createElement('span');
+                    lapDiff.className = 'lap-diff';
+                    
+                    if (index > 0) {
+                        const diff = lapTime - this.lapTimes[index - 1];
+                        const diffFormatted = this.formatTime(Math.abs(diff));
+                        const sign = diff >= 0 ? '+' : '-';
+                        lapDiff.innerHTML = `${sign}${diffFormatted.formatted}.<span class="milliseconds">${diffFormatted.milliseconds}</span>`;
+                        lapDiff.classList.add(diff >= 0 ? 'slower' : 'faster');
+                    } else {
+                        lapDiff.textContent = '--';
+                    }
+                    
+                    lapItem.appendChild(lapNumber);
+                    lapItem.appendChild(lapTimeSpan);
+                    lapItem.appendChild(lapDiff);
+                    
+                    this.lapList.appendChild(lapItem);
+                });
+                
+                // 最新のラップを上に表示するため、リストを反転
+                const items = Array.from(this.lapList.children);
+                items.reverse().forEach(item => this.lapList.appendChild(item));
+            }
+        }
+        
+        // アプリケーション初期化
+        const stopwatch = new Stopwatch();
+        
+        // キーボードショートカット
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                stopwatch.toggleTimer();
+            } else if (e.code === 'KeyL' && !stopwatch.lapBtn.disabled) {
+                e.preventDefault();
+                stopwatch.recordLap();
+            } else if (e.code === 'KeyR' && !stopwatch.resetBtn.disabled) {
+                e.preventDefault();
+                stopwatch.reset();
+            }
+        });
+    </script>
+</body>
+</html>

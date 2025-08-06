@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドミナントクイズ Ver.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F5EEDC;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(24, 59, 78, 0.15);
+            width: 600px;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #27548A;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 28px;
+            color: #183B4E;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .section-info {
+            font-size: 14px;
+            color: #27548A;
+            margin-bottom: 5px;
+        }
+
+        .score {
+            font-size: 16px;
+            color: #183B4E;
+            margin-bottom: 20px;
+        }
+
+        .question-container {
+            margin-bottom: 20px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .question-number {
+            font-size: 14px;
+            color: #27548A;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 22px;
+            color: #183B4E;
+            font-weight: 600;
+            line-height: 1.4;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            height: 120px;
+        }
+
+        .choice-btn {
+            padding: 12px 15px;
+            border: 2px solid #27548A;
+            border-radius: 12px;
+            background: #F5EEDC;
+            font-size: 15px;
+            font-weight: 500;
+            color: #183B4E;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .choice-btn:hover {
+            background: #DDA853;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .choice-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .choice-btn.correct {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .choice-btn.incorrect {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .button-area {
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .next-btn {
+            display: none !important;
+        }
+
+        .result-area {
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .result-container {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            line-height: 1.4;
+        }
+
+        .result-container.show {
+            visibility: visible;
+        }
+
+        .result-container.correct {
+            background: #E8F5E8;
+            border: 2px solid #4CAF50;
+            color: #2E7D32;
+        }
+
+        .result-container.incorrect {
+            background: #FFEBEE;
+            border: 2px solid #f44336;
+            color: #C62828;
+        }
+
+        .section-result {
+            background: #E3F2FD;
+            border: 2px solid #27548A;
+            color: #183B4E;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            visibility: hidden;
+        }
+
+        .section-result.show {
+            visibility: visible;
+        }
+
+        .section-result h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #183B4E;
+        }
+
+        .section-result p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .next-btn, .next-section-btn {
+            padding: 12px 25px;
+            background: #DDA853;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .next-btn:hover, .next-section-btn:hover {
+            background: #C49843;
+            transform: translateY(-2px);
+        }
+
+        .restart-btn {
+            padding: 10px 20px;
+            background: #27548A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            align-self: center;
+        }
+
+        .restart-btn:hover {
+            background: #183B4E;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 770px) and (min-width: 460px) {
+            .quiz-container {
+                width: 95vw;
+                height: 93vh;
+                padding: 18px;
+            }
+            
+            .choices-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                height: 105px;
+            }
+            
+            .title {
+                font-size: 22px;
+            }
+            
+            .question-text {
+                font-size: 17px;
+                min-height: 48px;
+            }
+            
+            .choice-btn {
+                padding: 10px 8px;
+                font-size: 13px;
+                min-height: 48px;
+            }
+
+            .button-area {
+                height: 55px;margin-top: 2rem;
+            }
+
+            .result-area {
+                height: auto;
+            }
+
+            .question-container {
+                height: 110px;
+            }
+
+            .header {
+                margin-bottom: 18px;
+            }
+
+            .restart-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .next-section-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+
+            .result-container {
+                font-size: 13px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                width: 95vw;
+                height: 93vh;
+                padding: 20px;
+            }
+            
+            .choices-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                height: 110px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .question-text {
+                font-size: 18px;
+                min-height: 50px;
+            }
+            
+            .choice-btn {
+                padding: 12px 8px;
+                font-size: 14px;
+                min-height: 50px;
+            }
+
+            .button-area {
+                height: 55px;margin-top: 2rem;
+            }
+
+            .result-area {
+                height: auto;
+            }
+
+            .question-container {
+                height: 120px;
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .restart-btn {
+                padding: 7px 14px;
+                font-size: 12px;
+            }
+
+            .next-section-btn {
+                padding: 9px 18px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                width: 98vw;
+                height: 93vh;
+                padding: 15px;
+            }
+            
+            .choices-container {
+                height: 100px;
+                gap: 8px;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+                min-height: 45px;
+            }
+            
+            .choice-btn {
+                padding: 10px 6px;
+                font-size: 13px;
+                min-height: 45px;
+            }
+
+            .button-area {
+                height: 50px;margin-top: 2rem;
+            }
+
+            .result-area {
+                height: auto;
+            }
+
+            .question-container {
+                height: 100px;
+            }
+
+            .header {
+                margin-bottom: 15px;
+            }
+
+            .restart-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+
+            .next-section-btn {
+                padding: 7px 14px;
+                font-size: 12px;
+            }
+
+            .result-container {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 20px;
+                height: 93vh;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+            
+            .choice-btn {
+                font-size: 13px;
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="header">
+            <h1 class="title">🎼 ドミナントクイズ</h1>
+            <div class="section-info" style="display: none;">セクション <span id="sectionNumber">1</span></div>
+            <p class="score">正解数: <span id="correctCount">0</span> / <span id="totalCount">0</span></p>
+        </div>
+
+        <div class="question-container">
+            <div class="question-number">問題 <span id="questionNumber">1</span> / <span id="totalQuestions">30</span></div>
+            <div class="question-text" id="questionText">問題を読み込み中...</div>
+        </div>
+
+        <div class="choices-container" id="choicesContainer">
+            <!-- 選択肢がJavaScriptで生成されます -->
+        </div>
+
+        <div class="button-area">
+            <button class="restart-btn" onclick="restartQuiz()">最初からやり直す</button>
+            <button class="next-section-btn" id="nextSectionBtn" onclick="nextSection()">次のセクションへ</button>
+        </div>
+
+        <div class="result-area">
+            <div class="result-container" id="resultContainer">
+                <!-- 結果がここに表示されます -->
+            </div>
+
+            <div class="section-result" id="sectionResult">
+                <!-- セクション結果がここに表示されます -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // bを♭に変換する関数
+        function convertFlat(str) {
+            return str.replace(/b/g, '♭');
+        }
+
+        // 重複するドミナントコードのペア定義
+        const duplicateDominants = {
+            'F#7': ['B', 'Bm'],
+            'C#7': ['F#', 'F#m'],
+            'G#7': ['C#', 'C#m'],
+//           'D#7': ['G#m', 'A♭m'], // G#mとA♭mは異名同音だが別扱い
+//           'A#7': ['D#m', 'E♭m'], // D#mとE♭mは異名同音だが別扱い
+//           'E#7': ['A#m', 'B♭m'], // A#mとB♭mは異名同音だが別扱い
+            'B7': ['E', 'Em'],
+            'E7': ['A', 'Am'],
+            'A7': ['D', 'Dm'],
+            'D7': ['G', 'Gm'],
+            'G7': ['C', 'Cm'],
+            'C7': ['F', 'Fm'],
+            'F7': ['B♭', 'B♭m'],
+            'B♭7': ['E♭', 'E♭m'],
+            'E♭7': ['A♭', 'A♭m'],
+            'G♭7': ['C♭', 'C♭m'],  // 理論上のキー
+            'D♭7': ['G♭', 'G♭m'],  // 理論上のキー
+            'A♭7': ['D♭', 'D♭m']   // 理論上のキー
+        };
+
+        // 音楽理論データ（異名同音を含む全キー）
+        const musicData = {
+            major: {
+                'C': 'G7', 'G': 'D7', 'D': 'A7', 'A': 'E7', 'E': 'B7',
+                'B': 'F#7', 'F#': 'C#7', 'C#': 'G#7',
+                'C♭': 'G♭7', 'G♭': 'D♭7', 'D♭': 'A♭7',
+                'F': 'C7', 'B♭': 'F7', 'E♭': 'B♭7', 'A♭': 'E♭7'
+            },
+            minor: {
+                'Am': 'E7', 'Em': 'B7', 'Bm': 'F#7', 'F#m': 'C#7', 'C#m': 'G#7',
+                'G#m': 'D#7', 'D#m': 'A#7', 'A#m': 'E#7',
+                'B♭m': 'F7', 'A♭m': 'E♭7', 'E♭m': 'B♭7',
+                'Dm': 'A7', 'Gm': 'D7', 'Cm': 'G7', 'Fm': 'C7'
+            }
+        };
+
+        // 全てのキーとコードを準備
+        const allMajorKeys = Object.keys(musicData.major);
+        const allMinorKeys = Object.keys(musicData.minor);
+        const allKeys = [...allMajorKeys, ...allMinorKeys];
+        const totalKeysPerSection = allKeys.length;
+
+        // 全てのドミナントコードを準備（重複除去）
+        const allDominants = [...new Set([...Object.values(musicData.major), ...Object.values(musicData.minor)])];
+
+        let currentSection = 1;
+        let questionCount = 0;
+        let sectionQuestionCount = 0;
+        let correctCount = 0;
+        let sectionCorrectCount = 0;
+        let isAnswered = false;
+        let currentQuestion = {};
+        let usedKeys = [];
+        let availableKeys = [];
+
+        // クイズの初期化
+        function initQuiz() {
+            currentSection = 1;
+            questionCount = 0;
+            correctCount = 0;
+            resetSection();
+        }
+
+        // セクションリセット
+        function resetSection() {
+            sectionQuestionCount = 0;
+            sectionCorrectCount = 0;
+            usedKeys = [];
+            availableKeys = [...allKeys];
+            updateDisplay();
+            generateQuestion();
+        }
+
+        // 問題生成
+        function generateQuestion() {
+            if (availableKeys.length === 0) {
+                showSectionResult();
+                return;
+            }
+
+            questionCount++;
+            sectionQuestionCount++;
+            isAnswered = false;
+            
+            // 使用可能なキーからランダム選択
+            const randomIndex = Math.floor(Math.random() * availableKeys.length);
+            const selectedKey = availableKeys[randomIndex];
+            
+            // 使用済みに移動
+            usedKeys.push(selectedKey);
+            availableKeys.splice(randomIndex, 1);
+
+            // キーのタイプを判定
+            const keyType = allMajorKeys.includes(selectedKey) ? 'major' : 'minor';
+            const correctDominant = musicData[keyType][selectedKey];
+
+            // 問題タイプをランダムに選択
+            const questionType = Math.random() < 0.5 ? 1 : 2;
+
+            if (questionType === 1) {
+                // タイプ1: キー → ドミナントセブンス
+                const keyDisplay = selectedKey + (keyType === 'major' ? 'メジャーキー' : 'キー');
+                currentQuestion = {
+                    type: 1,
+                    question: `${keyDisplay}のドミナントセブンスコードは？`,
+                    correct: correctDominant,
+                    choices: generateDominantChoices(correctDominant)
+                };
+            } else {
+                // タイプ2: ドミナントセブンス → キー
+                currentQuestion = {
+                    type: 2,
+                    question: `${correctDominant}のトニックコードは？`,
+                    correct: selectedKey,
+                    correctDominant: correctDominant, // 重複チェック用
+                    choices: [] // 一旦空にして後で生成
+                };
+                // 選択肢を生成（重複チェックのため問題設定後に実行）
+                currentQuestion.choices = generateKeyChoices(selectedKey, correctDominant);
+            }
+
+            displayQuestion();
+        }
+
+        // ドミナントコード選択肢生成（重複なし）
+        function generateDominantChoices(correct) {
+            const choices = [correct];
+            const otherOptions = allDominants.filter(option => option !== correct);
+            
+            while (choices.length < 6 && otherOptions.length > 0) {
+                const randomIndex = Math.floor(Math.random() * otherOptions.length);
+                const randomOption = otherOptions[randomIndex];
+                choices.push(randomOption);
+                otherOptions.splice(randomIndex, 1);
+            }
+            
+            return choices.sort(() => Math.random() - 0.5);
+        }
+
+        // キー選択肢生成（重複なし・重複ドミナントを考慮）
+        function generateKeyChoices(correct, dominantChord) {
+            const choices = [correct];
+            
+            // 重複するドミナントの場合、もう一方の正解を除外リストに追加
+            let excludeKeys = [];
+            if (dominantChord && duplicateDominants[dominantChord]) {
+                const duplicateKeys = duplicateDominants[dominantChord];
+                excludeKeys = duplicateKeys.filter(key => key !== correct);
+            }
+            
+            const keyChoices = allKeys.filter(key => 
+                key !== correct && !excludeKeys.includes(key)
+            );
+            
+            while (choices.length < 6 && keyChoices.length > 0) {
+                const randomIndex = Math.floor(Math.random() * keyChoices.length);
+                const randomOption = keyChoices[randomIndex];
+                choices.push(randomOption);
+                keyChoices.splice(randomIndex, 1);
+            }
+            
+            return choices.sort(() => Math.random() - 0.5);
+        }
+
+        // 問題表示
+        function displayQuestion() {
+            updateDisplay();
+            document.getElementById('questionText').textContent = currentQuestion.question;
+            
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            currentQuestion.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.textContent = choice;
+                button.onclick = () => checkAnswer(choice, button);
+                choicesContainer.appendChild(button);
+            });
+
+            hideResults();
+        }
+
+        // 答えチェック
+        function checkAnswer(selectedAnswer, buttonElement) {
+            if (isAnswered) return;
+            
+            isAnswered = true;
+            const isCorrect = selectedAnswer === currentQuestion.correct;
+            
+            // 全ボタンを無効化
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === currentQuestion.correct) {
+                    btn.classList.add('correct');
+                } else if (btn === buttonElement && !isCorrect) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // 解説文生成
+            function generateExplanation(question, correct, isCorrect) {
+                let explanation = '';
+                
+                if (question.type === 1) {
+                    // キー → ドミナントセブンス
+                    const keyName = question.question.split('の')[0];
+                    explanation = `${keyName}の5度上の音（ドミナント）にセブンスコードを作ると${correct}になります。`;
+                } else {
+                    // ドミナントセブンス → トニックコード
+                    const dominantChord = question.question.split('の')[0];
+                    explanation = `${dominantChord}は${correct}をトニックとするキーのドミナントセブンスコードです。`;
+                }
+                
+                return explanation;
+            }
+
+            // 結果表示
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.classList.add('show');
+            
+            const explanation = generateExplanation(currentQuestion, currentQuestion.correct, isCorrect);
+            
+            if (isCorrect) {
+                correctCount++;
+                sectionCorrectCount++;
+                resultContainer.className = 'result-container correct show';
+                resultContainer.innerHTML = `
+                    <div style="font-size: 16px; margin-bottom: 8px;">✅ 正解！</div>
+                    <div style="font-size: 13px; font-weight: 400;">${explanation}</div>
+                `;
+            } else {
+                resultContainer.className = 'result-container incorrect show';
+                resultContainer.innerHTML = `
+                    <div style="font-size: 16px; margin-bottom: 5px;">❌ 不正解</div>
+                    <div style="font-size: 14px; margin-bottom: 8px;">正解は「${currentQuestion.correct}」です</div>
+                    <div style="font-size: 13px; font-weight: 400;">${explanation}</div>
+                `;
+            }
+
+            updateDisplay();
+            
+            if (availableKeys.length === 0) {
+                // セクション終了
+                setTimeout(() => {
+                    showSectionResult();
+                }, 1500);
+            } else {
+                // 自動的に次の問題へ進行
+                setTimeout(() => {
+                    generateQuestion();
+                }, 500);
+            }
+        }
+
+        // セクション結果表示
+        function showSectionResult() {
+            hideResults();
+            
+            const percentage = Math.round((sectionCorrectCount / totalKeysPerSection) * 100);
+            let comment = '';
+            
+            if (percentage >= 90) {
+                comment = '素晴らしい！ドミナントセブンスの理解が完璧です。';
+            } else if (percentage >= 80) {
+                comment = 'とても良い成績です！基本的な理解ができています。';
+            } else if (percentage >= 70) {
+                comment = '良い成績です。もう少し練習すると完璧になりそうです。';
+            } else if (percentage >= 60) {
+                comment = '基本は理解できています。復習してさらに向上させましょう。';
+            } else {
+                comment = '基礎から復習することをお勧めします。頑張りましょう！';
+            }
+
+            const sectionResult = document.getElementById('sectionResult');
+            sectionResult.innerHTML = `
+                <h3>30問完了！</h3>
+                <p>正解率: ${percentage}% (${sectionCorrectCount}/${totalKeysPerSection})</p>
+                <p>${comment}</p>
+            `;
+            sectionResult.classList.add('show');
+            
+            document.getElementById('nextSectionBtn').style.display = 'inline-block';
+        }
+
+        // 次の問題
+        function nextQuestion() {
+            generateQuestion();
+        }
+
+        // 次のセクション
+        function nextSection() {
+            currentSection++;
+            resetSection();
+        }
+
+        // 表示更新
+        function updateDisplay() {
+            document.getElementById('sectionNumber').textContent = currentSection;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('totalCount').textContent = questionCount;
+            document.getElementById('questionNumber').textContent = sectionQuestionCount;
+            document.getElementById('totalQuestions').textContent = totalKeysPerSection;
+        }
+
+        // 結果非表示
+        function hideResults() {
+            const sectionResult = document.getElementById('sectionResult');
+            
+            // 通常の結果エリアは非表示にしない（解説を残すため）
+            sectionResult.classList.remove('show');
+            document.getElementById('nextSectionBtn').style.display = 'none';
+        }
+
+        // クイズリスタート
+        function restartQuiz() {
+            // 結果エリアをリセット
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.classList.remove('show', 'correct', 'incorrect');
+            initQuiz();
+        }
+
+        // 初期化実行
+        window.onload = function() {
+            initQuiz();
+        };
+    </script>
+</body>
+</html>
